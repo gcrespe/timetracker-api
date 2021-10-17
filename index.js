@@ -7,7 +7,8 @@ const PORT = process.env.PORT || 3001;
 
 app.use(express.json())
 
-const router = require("./routes/router.js")
-app.use('/api', router)
+app.use('/api', require("./routes/login.js"))
+app.use('/api/projects', require("./routes/project.js"))
+app.use('/api/tasks', require("./routes/task.js"))
 
 app.listen(PORT, () => console.log('Server running on port ' + PORT))
