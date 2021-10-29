@@ -223,5 +223,36 @@ router.post("/total-task-time", (req, res, next) => {
 
 })
 
+router.get("/ongoing-task-activities", (req, res, next) => {
+
+
+    db.query(`SELECT id FROM tasks WHERE LOWER(username) = LOWER('${req.body.username}') AND status = 'ONGOING';`, (err, task) => {
+        
+        if(err){
+            return res.status(400).send({
+                message: err
+            });
+        }
+
+        db.query(`SELECT * FROM activities WHERE taskId = '${task[0]}'`, (err, activities) => {
+
+            if(err){
+                return res.status(400).send({
+                    message: err
+                });
+            }
+    
+    
+            return res.status(200).send({
+                activities
+            });
+            
+    
+        })
+
+    })
+
+})
+
 
 module.exports = router;
