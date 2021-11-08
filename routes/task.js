@@ -207,7 +207,7 @@ router.post("/lap-task", (req,res,next) => {
 
 router.post("/total-task-time", (req, res, next) => {
 
-    db.query(`SELECT sum(seconds) as totalTime FROM activities WHERE taskId = ${db.escape(req.body.taskId)};`, (err, result) => {
+    db.query(`SELECT id FROM tasks WHERE LOWER(username) = LOWER('${req.body.username}') AND status = 'ONGOING';`, (err, task) => {
         
         if(err){
             return res.status(400).send({
@@ -215,15 +215,29 @@ router.post("/total-task-time", (req, res, next) => {
             });
         }
 
-        return res.status(200).send({
-            totalTime: result[0].totalTime
-        });
+        console.log(task)
+
+        if(task.length > 0)
+            db.query(`SELECT sum(seconds) as totalTime FROM activities WHERE taskId = ${db.escape(task[0].id)};`, (err, result) => {
+            
+                if(err){
+                    return res.status(400).send({
+                        message: err
+                    });
+                }
+                
         
+                return res.status(200).send({
+                    totalTime: result[0].totalTime
+                });
+                
+            })
+
     })
 
 })
 
-router.get("/ongoing-task-activities", (req, res, next) => {
+router.post("/ongoing-task-activities", (req, res, next) => {
 
 
     db.query(`SELECT id FROM tasks WHERE LOWER(username) = LOWER('${req.body.username}') AND status = 'ONGOING';`, (err, task) => {
@@ -234,22 +248,28 @@ router.get("/ongoing-task-activities", (req, res, next) => {
             });
         }
 
-        db.query(`SELECT * FROM activities WHERE taskId = '${task[0]}'`, (err, activities) => {
+        if(task.length > 0)
+            db.query(`SELECT id, seconds FROM activities WHERE taskId = '${task[0].id}'`, (err, activities) => {
 
-            if(err){
-                return res.status(400).send({
-                    message: err
+                if(err){
+                    return res.status(400).send({
+                        message: err
+                    });
+                }
+        
+                return res.status(200).send({
+                    activities
                 });
-            }
-    
-    
-            return res.status(200).send({
-                activities
-            });
-            
-    
-        })
+                
+        
+            })
+        else {
 
+            return res.status(200).send({
+                activities: []
+            });
+
+        }
     })
 
 })

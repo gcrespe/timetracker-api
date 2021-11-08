@@ -105,7 +105,6 @@ router.post("/update-profile-info" , (req, res, next) => {
 
     db.query(`UPDATE users SET 
                 username = ${db.escape(req.body.newUsername)},
-                birthdate = ${db.escape(req.body.birthdate)},
                 email = ${db.escape(req.body.email)}
                 WHERE username = ${db.escape(req.body.username)}`, (err, result) => {
         
@@ -124,8 +123,24 @@ router.post("/update-profile-info" , (req, res, next) => {
 
 })
 
-router.post("/send-email-forgot-password", (req, res, next) => {
+router.post("/get-profile-info", (req, res, next) => {
 
+    db.query(`SELECT * FROM users WHERE username = ${db.escape(req.body.username)};`, (err, result) => {
+
+        if(err){
+            return res.status(400).send({
+                message: err
+            });
+        } 
+
+        return res.status(200).send({
+            user: result[0]
+        })
+    })
+
+})
+
+router.post("/send-email-forgot-password", (req, res, next) => {
 
     var generatedPassword = generate6RandomNumbers();
 
@@ -171,27 +186,21 @@ router.post("/send-email-forgot-password", (req, res, next) => {
 async function sendEmail(email, password){
 
     let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false, // true for 465, false for other ports
+        service: 'Gmail', // true for 465, false for other ports
         auth: {
-            user: 'timetrackersp@gmail.com', // generated ethereal user
-            pass: 'acb1def2', // generated ethereal password
+            user: 'suptimetracker@gmail.com', // generated ethereal user
+            pass: 'timetracker2021', // generated ethereal password
         },
     });
+
+    console.log("" + email)
 
     transporter.sendMail({
         from: '"Timetracker Support" <giuliano.crespe@gmail.com>', // sender address
         to: email, // list of receivers
         subject: "Geramos uma nova senha pra você", // Subject line
         text: `A sua nova senha é ${password}`, // plain text body
-        html: `<b>A sua nova senha é ${password}</b>`, // html body
-
-    }).then((info) => {
-        return info;
-    }).catch((error) => {
-        return error;
-    });
+    })
 
 }
 
