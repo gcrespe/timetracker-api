@@ -155,6 +155,11 @@ router.post("/update-profile-info" , (req, res, next) => {
                                 })
 
                             })
+
+                            db.query(`UPDATE tasks SET username = ${db.escape(req.body.newUsername)} WHERE username = ${db.escape(req.body.username)}`)
+                            
+                            db.query(`UPDATE projects SET participant = ${db.escape(req.body.newUsername)} WHERE participant = ${db.escape(req.body.username)}`)
+                        
                         }
                     })                    
                     
