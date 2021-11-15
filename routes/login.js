@@ -101,25 +101,67 @@ router.post("/login", (req, res, next) => {
 
 router.post("/update-profile-info" , (req, res, next) => {
 
-    //body: username, birthdate, gender, emailadress
+    db.query(`SELECT * FROM users WHERE username = ${db.escape(req.body.username)};`, (err, result) => {
 
-    db.query(`UPDATE users SET 
-                username = ${db.escape(req.body.newUsername)},
-                email = ${db.escape(req.body.email)}
-                WHERE username = ${db.escape(req.body.username)}`, (err, result) => {
-        
         if(err){
             return res.status(400).send({
                 message: err
             });
+        } 
+
+        console.log(result[0].id + "result\n")
+
+        if(result.length == 0){
+            return res.status(400).send({
+                message: "Usuario incorreto"
+            });
         }
 
-        return res.status(200).send({
-            message: "Updated profile info"
-        })
+        bcrypt.compare(
+            req.body.password, 
+            result[0]['password'], (bErr, bResult) => {
 
+                if(!bResult) {
+                    return res.status(400).send({
+                        message: "Password incorrect"
+                    })
+                }
+
+                console.log(bResult + "bresult\n")
+
+                if(bResult){
+
+                    bcrypt.hash(req.body.newPassword, 10, (errHash, hash) => {
+
+                        console.log(hash + "hash\n")
+
+                        if(errHash) {
+                            return res.status(500).send({
+                                message: errHash
+                            });
+        
+                        }else {
+        
+                            db.query(`UPDATE users SET username = ${db.escape(req.body.newUsername)}, email = ${db.escape(req.body.email)}, password = ${db.escape(hash)} WHERE id = ${db.escape(result[0].id)}`, (errUpdate, result) => {
+                
+                                if(errUpdate){
+                                    return res.status(400).send({
+                                        message: errUpdate
+                                    });
+                                }
+
+                                return res.status(200).send({
+                                    message: "Updated profile info"
+                                })
+
+                            })
+                        }
+                    })                    
+                    
+                };
+            }
+        )
     })
-
 
 })
 

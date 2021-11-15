@@ -43,6 +43,24 @@ router.get("/projects", (req, res, next) => {
     })
 })
 
+router.get("/projects-dates", (req, res, next) => {
+
+    db.query(`SELECT dueDate FROM projects WHERE participant = ${db.escape(req.query.username)};`, (err, result) => {
+        
+        if(err){
+            return res.status(400).send({
+                message: err
+            });
+        }
+
+        return res.status(200).send({
+            result
+        })
+
+    })
+
+})
+
 router.post("/get-tasks-status", (req, res, next) => {
 
     db.query(`SELECT count(title) as totalTasks FROM tasks WHERE username = ${db.escape(req.body.username)} AND project = ${db.escape(req.body.project)}`, (err, result) => {
